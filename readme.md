@@ -40,7 +40,8 @@ contain the following fields:
 * Amount in stock
 * Store location (all the location information in one string)
 
-In addition, the report must be sorted in **numerical** ascending order by the stock price.
+In addition, the report must be sorted in **numerical** ascending order by the stock price (ignore the 
+currency symbol if different items use different currencies).
 
 You will also submit the code you have written to solve this problem.  Your code **must** 
 use functions and every function **must** include a suitable docstring that describes 
@@ -49,3 +50,17 @@ what it does.  Each function should implement a logical part of the overall ETL 
 The template `main.py` includes several functions that you **must** implement and they must 
 pass unittests provided. In addition, you need to add the main code that generates the CSV file 
 as specified above.
+
+# Grading
+
+This assignment is worth 15% of the final marks for ITEC649. The marks will be assigned as follows:
+
+- Passing all automated tests: 12%
+- Manual assessment of the code quality: 2%
+- Manual assessment of documentation: 1%
+
+Code quality means well laid out code, good use of variable names, functions and use of appropriate 
+control flow and data structures.
+
+Documentation means that all functions that you write have suitable docstrings (e.g. keep the docstrings 
+provided in main.py) and where appropriate you use comments in your code to explain yourself.

@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 from database import DATABASE_NAME, create_tables
 
 
-def read_relations(db, filename):
+def read_relations(db, openfile):
     """Store the relations listed in filename into the database
     - db      : a connection to a database.
     - openfile: CSV file open for reading and holding a relation per line.
@@ -26,7 +26,7 @@ def read_relations(db, filename):
     pass
 
 
-def read_locations(db, filename):
+def read_locations(db, openfile):
     """Store the locations listed in the open file into the database
     - db      : a connection to a database.
     - openfile: CSV file open for reading and holding a location per line.
@@ -35,12 +35,13 @@ def read_locations(db, filename):
 
     Example of use:
     >>> db = sqlite3.connect(DATABASE_NAME)
-    >>> read_locations(db, open('locations.csv'))
+    >>> with open('locations.csv') as f:
+    >>>     read_locations(db, f)
     """
     pass
 
 
-def read_stock(db, filename):
+def read_stock(db, openfile):
     """Read the products from the open file and store them in the database
     - db      : a connection to a database.
     - openfile: HTML file open for reading and listing products.
@@ -49,12 +50,13 @@ def read_stock(db, filename):
 
     Example of use:
     >>> db = sqlite3.connect(DATABASE_NAME)
-    >>> read_stock(db, open('index.html'))
+    >>> with open('index.html') as f:
+    >>>     read_stock(db, f)
     """
     pass
 
 
-def report(db, outfile):
+def report(db, openfile):
     """Generate a database report and store it in outfile
     - db      : a connection to a database
     - openfile: a CSV file open for writing
@@ -68,12 +70,22 @@ def report(db, outfile):
 
     Example of use:
     >>> db = sqlite3.connect(DATABASE_NAME)
-    >>> report(db, open('report.csv', 'w'))
+    >>> with open('report.csv', 'w') as f:
+    >>>     report(db, open('report.csv', 'w'))
     """
     pass
 
-
-if __name__=='__main__':
+def main():
+    """Execute the main code that calls all functions
+    This code should call the above functions to read the files "relations.csv",
+    "locatons.csv" and "index.html", and generate "report.csv" as described in
+    the assignment specifications.
+    """
     db = sqlite3.connect(DATABASE_NAME)
     create_tables(db)
-    # Add your 'main' code here to call your functions
+
+    # Write your code below
+
+# Do not edit the code below
+if __name__=='__main__':
+    main()
