@@ -50,7 +50,7 @@ def read_stock(db, openfile):
 
     Example of use:
     >>> db = sqlite3.connect(DATABASE_NAME)
-    >>> with open('index.html') as f:
+    >>> with open('index.html', encoding='utf-8') as f:
     >>>     read_stock(db, f)
     """
     pass
