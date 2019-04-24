@@ -66,7 +66,7 @@ class BasicTests(unittest.TestCase):
 
     def test_read_stock_1(self):
         database.create_tables(self.db)
-        with open("index.html") as f:
+        with open("index.html", encoding='utf-8') as f:
             main.read_stock(self.db, f)
         cursor = self.db.cursor()
         cursor.execute("SELECT * FROM products")
@@ -77,7 +77,7 @@ class BasicTests(unittest.TestCase):
 
     def test_read_stock_2(self):
         database.create_tables(self.db)
-        with open("index2.html") as f:
+        with open("index2.html", encoding='utf-8') as f:
             main.read_stock(self.db, f)
         cursor = self.db.cursor()
         cursor.execute("SELECT * FROM products")
@@ -97,7 +97,7 @@ class BasicTests(unittest.TestCase):
 1,3,"Macquarie St",Melbourne,VIC"""
         main.read_relations(self.db, StringIO(my_relations))
         main.read_locations(self.db, StringIO(my_locations))
-        with open("index3.html") as f:
+        with open("index3.html", encoding='utf-8') as f:
             main.read_stock(self.db, f)
         with StringIO() as f:
             main.report(self.db, f)
