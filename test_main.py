@@ -1,158 +1,146 @@
 import unittest
 import sqlite3
+import os
+import csv
 
 import database
 import main
-from io import StringIO
-
-import csv
 
 
 class BasicTests(unittest.TestCase):
 
     def setUp(self):
         self.db = sqlite3.connect(":memory:")
-
-    def test_read_relations_1(self):
+        self.db.row_factory = sqlite3.Row
         database.create_tables(self.db)
-        with open("relations.csv") as f:
-            main.read_relations(self.db, f)
-        cursor = self.db.cursor()
-        cursor.execute("SELECT * FROM relations")
-        result = cursor.fetchall()
-        self.assertEqual(20, len(result))
-        self.assertSequenceEqual((1, 2), result[1][1:])
-        self.assertSequenceEqual((8, 2), result[8][1:])
 
-    def test_read_relations_2(self):
-        database.create_tables(self.db)
-        my_relations = """product,location
-0,1
-1,0
-2,1"""
-        main.read_relations(self.db, StringIO(my_relations))
-        cursor = self.db.cursor()
-        cursor.execute("SELECT * FROM relations")
-        result = cursor.fetchall()
-        self.assertEqual(3, len(result))
-        self.assertSequenceEqual((0, 1), result[0][1:])
-        self.assertSequenceEqual((1, 0), result[1][1:])
-        self.assertSequenceEqual((2, 1), result[2][1:])
+    def get_user(self, id):
+        """Get a user from the database for testing"""
+        cur = self.db.cursor()
+        cur.execute("select * from users where id=?", [id])
+        return cur.fetchone()
 
-    def test_read_locations_1(self):
-        database.create_tables(self.db)
-        with open("locations.csv") as f:
-            main.read_locations(self.db, f)
-        cursor = self.db.cursor()
-        cursor.execute("SELECT * FROM locations")
-        result = cursor.fetchall()
-        self.assertEqual(len(result), 3)
-        self.assertSequenceEqual((0, "12", "George Street", "Sydney", "NSW"), result[0])
-        self.assertSequenceEqual((1, "24", "Mary Street", "Brisbane", "QLD"), result[1])
-        self.assertSequenceEqual((2, "43", "Queen Street", "Melbourne", "VIC"), result[2])
+    def get_product(self, id):
+        """Get a product from the database for testing"""
+        cur = self.db.cursor()
+        cur.execute("select * from products where id=?", [id])
+        return cur.fetchone()
 
-    def test_read_locations_2(self):
-        database.create_tables(self.db)
-        my_locations = """id,number,street,city,state
-0,2,"Peter Rd",Adelaide,SA
-1,31,"Pitt Ave",Perth,WA"""
-        main.read_locations(self.db,StringIO(my_locations))
-        cursor = self.db.cursor()
-        cursor.execute("SELECT * FROM locations")
-        result = cursor.fetchall()
-        self.assertEqual(len(result), 2)
-        self.assertSequenceEqual((0, "2", "Peter Rd", "Adelaide", "SA"), result[0])
-        self.assertSequenceEqual((1, "31", "Pitt Ave", "Perth", "WA"), result[1])
+    def get_order(self, user_id, product_id):
+        """Get an order from the database for testing"""
+        cur = self.db.cursor()
+        cur.execute("select * from orders where user_id=? and product_id=?", [user_id, product_id])
+        return cur.fetchone()
 
-    def test_read_stock_1(self):
-        database.create_tables(self.db)
-        with open("index.html", encoding='utf-8') as f:
-            main.read_stock(self.db, f)
-        cursor = self.db.cursor()
-        cursor.execute("SELECT * FROM products")
-        result = cursor.fetchall()
-        self.assertEqual(len(result), 20)
-        self.assertSequenceEqual((2, "Yellow Wool Jumper", 81, 175.31, "$"), result[2])
-        self.assertSequenceEqual((6, "Dark Denim Top", 78, 90.31, "$"), result[6])
+    def test_add_user(self):
+        """We can add a user to the database"""
 
-    def test_read_stock_2(self):
-        database.create_tables(self.db)
-        with open("index2.html", encoding='utf-8') as f:
-            main.read_stock(self.db, f)
-        cursor = self.db.cursor()
-        cursor.execute("SELECT * FROM products")
-        result = cursor.fetchall()
-        self.assertEqual(len(result), 6)
-        self.assertSequenceEqual((4, "Zipped Jacket", 95, 56.73, "$"), result[4])
-        self.assertSequenceEqual((5, "Silk Summer Top", 63, 36.56,'£'), result[5])
+        main.add_user(self.db, 1, 'Steve', 'Cassidy', 'Steve@here.com', 'Male')
 
-    def test_report_1(self):
-        database.create_tables(self.db)
-        my_relations = """product,location
-0,0
-1,1
-2,0"""
-        my_locations = """id,number,street,city,state
-0,6,"John Rd",Bourke,NSW
-1,3,"Macquarie St",Melbourne,VIC"""
-        main.read_relations(self.db, StringIO(my_relations))
-        main.read_locations(self.db, StringIO(my_locations))
-        with open("index3.html", encoding='utf-8') as f:
-            main.read_stock(self.db, f)
-        with StringIO() as f:
-            main.report(self.db, f)
-            output = f.getvalue()
+        user = self.get_user(1)
+        self.assertIsNotNone(user)
+        self.assertEqual(user['first_name'], 'Steve')
 
-        #print(output)
-        reader = csv.DictReader(StringIO(output))
-        records = [r for r in reader]
-        self.assertEqual(3, len(records))
-        self.assertDictEqual({'description': 'Zipped Jacket',
-                             'price': '56.73',
-                             'currency': '£',
-                             'stock': '95',
-                             'location': "3, Macquarie St, Melbourne, VIC"},
-                             dict(records[0]))
-        self.assertDictEqual({'description': 'Soft Winter Jacket',
-                             'price': '111.23',
-                             'currency': '$',
-                             'stock': '38',
-                             'location': "6, John Rd, Bourke, NSW"},
-                             dict(records[1]))
-        self.assertDictEqual({'description': 'Navy Sports Jacket',
-                             'price': '149.05',
-                             'currency': '$',
-                             'stock': '25',
-                             'location': "6, John Rd, Bourke, NSW"},
-                             dict(records[2]))
+    def test_add_product(self):
+        """We can add a product to the database"""
 
-    def test_main_1(self):
-        with open("report.csv", "w") as f:
-            pass
-        main.main()
-        with open("report.csv") as f:
-            reader = csv.DictReader(f)
-            records = [r for r in reader]
-        self.assertEqual(20, len(records))
-        self.assertDictEqual({'description': 'White Cotton Shirt',
-                             'price': '14.63',
-                             'currency': '$',
-                             'stock': '13',
-                             'location': "12, George Street, Sydney, NSW"},
-                             dict(records[0]))
-        self.assertDictEqual({'description': 'Blue Silk Tuxedo',
-                             'price': '26.48',
-                             'currency': '$',
-                             'stock': '84',
-                             'location': "24, Mary Street, Brisbane, QLD"},
-                             dict(records[3]))
-        self.assertDictEqual({'description': 'Black Leather Bag',
-                             'price': '67.2',
-                             'currency': '$',
-                             'stock': '24',
-                             'location': "43, Queen Street, Melbourne, VIC"},
-                             dict(records[9]))
+        main.add_product(self.db, 1, "description", 123, 45)
 
+        product = self.get_product(1)
+        self.assertIsNotNone(product)
+        self.assertEqual(product['stock'], 123)
+
+    def test_add_order(self):
+        """We can add an order to the database (if the ids are valid)"""
+
+        main.add_user(self.db, 1, 'Steve', 'Cassidy', 'Steve@here.com', 'Male')
+        main.add_product(self.db, 98, "description", 123, 45)
+        msg = main.add_order(self.db, 98, 1, 3)
+        self.assertEqual("Success", msg)
+
+        order = self.get_order(1, 98)
+        self.assertIsNotNone(order)
+        self.assertEqual(order['quantity'], 3)
+
+        msg = main.add_order(self.db, 98, 2, 3)
+        self.assertEqual("Invalid user", msg)
+
+        msg = main.add_order(self.db, 99, 1, 3)
+        self.assertEqual("Invalid product", msg)
+
+    def test_read_users(self):
+        """We can read the users CSV file"""
+
+        main.read_users(self.db, "users.csv")
+
+        # check for some users
+        # 19,Dyanna,Caffery,dcafferyi@smh.com.au,Female
+        user = self.get_user(19)
+        self.assertIsNotNone(user)
+        self.assertEqual(user['first_name'], 'Dyanna')
+        self.assertEqual(user['gender'], 'Female')
+
+        # verify number of users
+        cur = self.db.cursor()
+        cur.execute("select count(id) as count from users")
+        result = cur.fetchone()
+        self.assertEqual(100, result['count'])
+
+    def test_read_products(self):
+        """We can read the products from the HTML file"""
+
+        main.read_products(self.db, "index.html")
+
+        prod = self.get_product(2)
+        self.assertIsNotNone(prod)
+        self.assertEqual(prod['description'], 'Yellow Wool Jumper')
+        self.assertEqual(prod['price'], 175.31)
+
+        # verify number of products
+        cur = self.db.cursor()
+        cur.execute("select count(id) as count from products")
+        result = cur.fetchone()
+        self.assertEqual(20, result['count'])
+
+    def test_read_orders(self):
+        """"We can read the orders from the CSV file"""
+
+        # need to read products and users first to create valid ids
+        main.read_users(self.db, "users.csv")
+        main.read_products(self.db, "index.html")
+        main.read_orders(self.db, "orders.csv")
+
+        order = self.get_order(22, 18)
+        self.assertIsNotNone(order)
+        self.assertEqual(order['quantity'], 9)
+
+        # should not have this order, invalid product
+        order = self.get_order(47, 33)
+        self.assertIsNone(order)
+
+        # verify number of orders
+        cur = self.db.cursor()
+        cur.execute("select count(quantity) as count from orders")
+        result = cur.fetchone()
+        self.assertEqual(999, result['count'])
+
+    def test_report(self):
+        """We can generate the final report CSV file"""
+
+        outfile = "testoutputfile.csv"
+
+        main.main(self.db, outfile)
+        self.assertTrue(os.path.exists(outfile))
+        with open(outfile) as fd:
+            report = dict()
+            reader = csv.DictReader(fd)
+            report = list(reader)
+        self.assertEqual(999, len(report))
+
+        # check the first row
+        row = report[0]
+        self.assertEqual(row['first_name'], 'Renard')
+        self.assertEqual(row['total'], 377.04)
 
 
 if __name__ == '__main__':

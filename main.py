@@ -11,81 +11,68 @@ from bs4 import BeautifulSoup
 from database import DATABASE_NAME, create_tables
 
 
-def read_relations(db, openfile):
-    """Store the relations listed in filename into the database
-    - db      : a connection to a database.
-    - openfile: CSV file open for reading and holding a relation per line.
-    This function does not return any values. After executing this function, each row of the CSV file
-    will be stored as a relation in the database.
+def add_user(db, id, first_name, last_name, email, gender):
+    """Add a single user record to the database"""
 
-    Example of use:
-    >>> db = sqlite3.connect(DATABASE_NAME)
-    >>> with open('relations.csv') as f:
-    >>>    read_relations(db, f)
+
+def add_product(db, id, description, stock, price):
+    """Add a single product to the database"""
+
+
+def add_order(db, product_id, user_id, quantity):
+    """Add a single order to the database. Verify that the product and user ids are
+    valid before adding.
+    Return the string "Success" if the record was added, otherwise return
+    "Invalid user" or "Invalid product"
     """
-    pass
 
 
-def read_locations(db, openfile):
-    """Store the locations listed in the open file into the database
-    - db      : a connection to a database.
-    - openfile: CSV file open for reading and holding a location per line.
-    This function does not return any values or print anything on screen. After executing this function,
-    each row of the CSV file will be stored as a location in the database.
-
-    Example of use:
-    >>> db = sqlite3.connect(DATABASE_NAME)
-    >>> with open('locations.csv') as f:
-    >>>     read_locations(db, f)
+def read_users(db, filename):
+    """Read user data from the given filename. Populate the `users` table
+    in the database with the data read.
+     - db      : a connection to a database.
+    - filename: the input CSV format file to read data from
+    This function does not return a value. It updates the database with user data.
     """
-    pass
 
 
-def read_stock(db, openfile):
-    """Read the products from the open file and store them in the database
+def read_orders(db, filename):
+    """Read the orders from the given CSV file and store them in the database
     - db      : a connection to a database.
-    - openfile: HTML file open for reading and listing products.
+    - filename: the input CSV format file to read data from
+    This function does not return a value. It updates the database with order data.
+    If any errors are encountered in the data, a message is printed.
+    """
+
+
+def read_products(db, filename):
+    """Read the products from the given HTML file and store them in the database
+    - db      : a connection to a database.
+    - filename: the input HTML format file to read data from
     This function does not return any values or print anything on screen. After executing this function,
     the products found in the HTML file will be stored as product records in the database.
-
-    Example of use:
-    >>> db = sqlite3.connect(DATABASE_NAME)
-    >>> with open('index.html', encoding='utf-8') as f:
-    >>>     read_stock(db, f)
     """
-    pass
 
 
-def report(db, openfile):
-    """Generate a database report and store it in outfile
+def report(db, filename):
+    """Generate a database report and store it in filename in CSV format
     - db      : a connection to a database
-    - openfile: a CSV file open for writing
-    This function does not return any values or print anything on screen. After executing this function,
-    the file outfile will contain the product information, one row in the CSV file per product. Each row must
-    contain the following information:
-      - description
-      - price (including the currency symbol)
-      - amount in stock
-      - store location
-
-    Example of use:
-    >>> db = sqlite3.connect(DATABASE_NAME)
-    >>> with open('report.csv', 'w') as f:
-    >>>     report(db, open('report.csv', 'w'))
+    - filename: the name of the csv file to write to
+    This function does not return any values or print anything on screen, it generates
+    a report in CSV format and writes it to the given filename.
     """
-    pass
 
-def main():
-    """Execute the main code that calls all functions
-    This code should call the above functions to read the files "relations.csv",
-    "locatons.csv" and "index.html", and generate "report.csv" as described in
-    the assignment specifications.
+
+def main(db, filename):
+    """Execute the main code that calls all functions to generate the resulting
+    report in `filename` in CSV format.
     """
-    db = sqlite3.connect(DATABASE_NAME)
-    create_tables(db)
-
     # Write your code below
+
 
 # Do not edit the code below
 if __name__=='__main__':
-    main()
+    db = sqlite3.connect(DATABASE_NAME)
+    db.row_factory = sqlite3.Row
+    create_tables(db)
+    main(db, "report.csv")

@@ -14,26 +14,25 @@ CREATE TABLE products (
   id integer unique primary key,
   description text,
   stock integer,
-  price money,
-  currency varchar
+  price money
 );
 
-DROP TABLE IF EXISTS relations;
-CREATE TABLE relations (
-  id integer unique primary key autoincrement,
-  product integer,
-  location integer,
-  FOREIGN KEY(product) REFERENCES products(id),
-  FOREIGN KEY(location) REFERENCES locations(id)
-);
-
-DROP TABLE IF EXISTS locations;
-CREATE TABLE locations (
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
   id integer unique primary key,
-  number text,
-  street text,
-  city text,
-  state text
+  first_name text,
+  last_name text,
+  email text,
+  gender text
+);
+
+DROP TABLE IF EXISTS orders;
+CREATE TABLE orders (
+    product_id integer,
+    user_id integer,
+    quantity integer,
+    FOREIGN KEY(product_id) REFERENCES products(id),
+    FOREIGN KEY(user_id) REFERENCES users(id)
 );
 """
     db.executescript(sql)
