@@ -132,15 +132,15 @@ class BasicTests(unittest.TestCase):
         main.main(self.db, outfile)
         self.assertTrue(os.path.exists(outfile))
         with open(outfile) as fd:
-            report = dict()
             reader = csv.DictReader(fd)
             report = list(reader)
+        os.unlink(outfile)  # remove the output file
         self.assertEqual(999, len(report))
 
         # check the first row
         row = report[0]
         self.assertEqual(row['first_name'], 'Renard')
-        self.assertEqual(row['total'], 377.04)
+        self.assertEqual(row['total'], '377.04')  # change to string
 
 
 if __name__ == '__main__':
